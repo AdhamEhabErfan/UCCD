@@ -121,6 +121,43 @@
     min-height: 18px;
   }
 
+  /* ── Key type toggle ── */
+  .key-type-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .key-type-btn {
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sub);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .key-type-btn.active {
+    background: var(--navy-pale);
+    border-color: var(--navy);
+    color: var(--navy);
+  }
+  .key-info-box {
+    background: var(--navy-pale);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .key-info-box strong { color: var(--navy); font-weight: 600; }
+
   /* ── Buttons ── */
   .btn {
     display: inline-flex;
@@ -460,8 +497,21 @@
       <input type="text" id="bin-id-input" placeholder="e.g. 6650f2e5acd3cb34a85...">
     </div>
 
+    <div class="field" style="margin-bottom:10px">
+      <label class="field-label">Key type</label>
+      <div class="key-type-row">
+        <button class="key-type-btn active" id="kt-master" onclick="setKeyType('master')">Master Key</button>
+        <button class="key-type-btn" id="kt-access" onclick="setKeyType('access')">Access Key</button>
+      </div>
+    </div>
+
+    <div id="key-info-box" class="key-info-box">
+      <strong>Master Key</strong> — full access to all your bins. Use this if you're the bin owner.<br>
+      Found in JSONBin → Account → API Keys → Master Key.
+    </div>
+
     <div class="field" style="margin-bottom:20px">
-      <label class="field-label" for="api-key-input">API Key</label>
+      <label class="field-label" for="api-key-input" id="api-key-label">Master Key</label>
       <input type="password" id="api-key-input" placeholder="$2a$10$..." autocomplete="current-password">
     </div>
 
@@ -603,8 +653,9 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
-let BIN_ID  = '';
-let API_KEY = '';
+let BIN_ID   = '';
+let API_KEY  = '';
+let KEY_TYPE = 'master';  // 'master' | 'access'
 let allEvents  = [];
 let deleteIndex = null;
 let editIndex   = null;   // null = adding new; number = editing existing
@@ -656,6 +707,18 @@ function buildColorPicker() {
 function selectIcon(ic) { selectedIcon = ic; buildIconPicker(); }
 function selectColor(hex) { selectedColor = hex; buildColorPicker(); }
 
+// ── Key type toggle ────────────────────────────────────────────────────────
+function setKeyType(type) {
+  KEY_TYPE = type;
+  document.getElementById('kt-master').classList.toggle('active', type === 'master');
+  document.getElementById('kt-access').classList.toggle('active', type === 'access');
+  document.getElementById('api-key-label').textContent = type === 'master' ? 'Master Key' : 'Access Key';
+  document.getElementById('api-key-input').placeholder = type === 'master' ? '$2a$10$...' : '$2b$10$...';
+  document.getElementById('key-info-box').innerHTML = type === 'master'
+    ? '<strong>Master Key</strong> — full access to all your bins. Use this if you\'re the bin owner.<br>Found in JSONBin → Account → API Keys → Master Key.'
+    : '<strong>Access Key</strong> — scoped key with limited permissions. Safer to share with team members.<br>Found in JSONBin → Account → API Keys → Access Keys. Make sure it has <strong>Read &amp; Write</strong> permission on this bin.';
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────
 async function connect() {
   const binId  = document.getElementById('bin-id-input').value.trim();
@@ -671,11 +734,15 @@ async function connect() {
   btnTxt.innerHTML = '<div class="spinner"></div>';
 
   try {
+    const headers = buildHeaders();
     const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-      headers: { 'X-Master-Key': apiKey, 'X-Bin-Meta': 'false' }
+      headers: { ...headers, 'X-Bin-Meta': 'false' }
     });
-    if (res.status === 401) throw new Error('Invalid API key.');
-    if (res.status === 404) throw new Error('Bin ID not found.');
+    if (res.status === 401) throw new Error(KEY_TYPE === 'master'
+      ? 'Invalid Master Key. Check it in JSONBin → Account → API Keys.'
+      : 'Invalid Access Key, or it lacks Read permission on this bin.');
+    if (res.status === 403) throw new Error('Access denied. Make sure the Access Key has Read & Write permission on this bin.');
+    if (res.status === 404) throw new Error('Bin ID not found. Double-check the Bin ID.');
     if (!res.ok) throw new Error(`Error ${res.status}. Check your credentials.`);
 
     const data = await res.json();
@@ -698,12 +765,13 @@ async function connect() {
 }
 
 function logout() {
-  BIN_ID = ''; API_KEY = ''; allEvents = []; editIndex = null;
+  BIN_ID = ''; API_KEY = ''; KEY_TYPE = 'master'; allEvents = []; editIndex = null;
   document.getElementById('login-screen').style.display = 'block';
   document.getElementById('app').style.display = 'none';
   document.getElementById('logout-btn').style.display = 'none';
   document.getElementById('bin-id-input').value = '';
   document.getElementById('api-key-input').value = '';
+  setKeyType('master');
   setStatus('', 'Not connected');
 }
 
@@ -778,7 +846,7 @@ async function loadEvents() {
 
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
+      headers: { ...buildHeaders(), 'X-Bin-Meta': 'false' }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     allEvents = normaliseData(await res.json());
@@ -926,13 +994,22 @@ async function confirmDelete() {
 async function pushToJsonBin(data) {
   const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+    headers: { 'Content-Type': 'application/json', ...buildHeaders() },
     body: JSON.stringify(data),
   });
   if (!res.ok) {
     const body = await res.text();
+    if (res.status === 401 || res.status === 403)
+      throw new Error('Write permission denied. If using an Access Key, make sure it has Write access to this bin.');
     throw new Error(`HTTP ${res.status}: ${body}`);
   }
+}
+
+/** Returns the correct auth header depending on KEY_TYPE */
+function buildHeaders() {
+  return KEY_TYPE === 'access'
+    ? { 'X-Access-Key': API_KEY }
+    : { 'X-Master-Key': API_KEY };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
