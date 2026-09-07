@@ -6,469 +6,141 @@
 <title>UCCD Admin Panel</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --navy: #1A237E;
-    --navy-light: #283593;
-    --navy-pale: #E8EAF6;
-    --gold: #CF9B00;
-    --gold-light: #FFF8E1;
-    --green: #00695C;
-    --green-light: #E0F2F1;
-    --red: #C62828;
-    --red-light: #FFEBEE;
-    --gray: #F4F5F7;
-    --border: #DDE1EF;
-    --text: #1C1E2E;
-    --sub: #5C607A;
-    --white: #ffffff;
-    --radius: 10px;
-    --shadow: 0 2px 12px rgba(26,35,126,0.08);
+    --navy:#1A237E; --navy-light:#283593; --navy-pale:#E8EAF6;
+    --gold:#CF9B00; --gold-light:#FFF8E1;
+    --green:#00695C; --green-light:#E0F2F1;
+    --red:#C62828; --red-light:#FFEBEE;
+    --orange:#E65100; --orange-light:#FFF3E0;
+    --border:#DDE1EF; --gray:#F4F5F7;
+    --text:#1C1E2E; --sub:#5C607A; --white:#fff;
+    --radius:10px; --shadow:0 2px 12px rgba(26,35,126,.08);
   }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#F0F2FA; color:var(--text); min-height:100vh; font-size:14px; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #F0F2FA;
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-  }
+  /* Header */
+  header { background:var(--navy); padding:0 32px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.18); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-badge { background:var(--gold); color:var(--navy); font-weight:700; font-size:13px; padding:3px 10px; border-radius:6px; }
+  .logo-label { color:rgba(255,255,255,.7); font-size:13px; }
+  #status-dot { width:8px; height:8px; border-radius:50%; background:#ccc; display:inline-block; margin-right:6px; transition:background .3s; }
+  #status-dot.connected { background:#4CAF50; }
+  #status-dot.error     { background:#ef5350; }
+  #status-text { color:rgba(255,255,255,.75); font-size:12px; }
 
-  /* ── Top bar ── */
-  header {
-    background: var(--navy);
-    padding: 0 32px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  /* Login */
+  #login-screen { max-width:480px; margin:80px auto; padding:0 16px; }
+  .login-card { background:var(--white); border-radius:16px; padding:40px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .login-card h2 { font-size:20px; font-weight:600; color:var(--navy); margin-bottom:6px; }
+  .login-card p  { color:var(--sub); font-size:13px; margin-bottom:28px; line-height:1.6; }
+  .section-head { font-size:11px; font-weight:700; color:var(--sub); letter-spacing:.8px; text-transform:uppercase; margin:20px 0 10px; }
+  .field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field-label { font-size:12px; font-weight:600; color:var(--navy); }
+  input[type=text],input[type=password],input[type=datetime-local],textarea,select {
+    width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:var(--radius);
+    font-size:13px; font-family:inherit; color:var(--text); background:var(--white); outline:none; transition:border-color .15s;
   }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-badge {
-    background: var(--gold);
-    color: var(--navy);
-    font-weight: 700;
-    font-size: 13px;
-    padding: 3px 10px;
-    border-radius: 6px;
-    letter-spacing: 0.5px;
-  }
-  .logo-label { color: rgba(255,255,255,0.7); font-size: 13px; }
-  #status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #ccc; display: inline-block; margin-right: 6px;
-    transition: background 0.3s;
-  }
-  #status-dot.connected { background: #4CAF50; }
-  #status-dot.error { background: #ef5350; }
-  #status-text { color: rgba(255,255,255,0.75); font-size: 12px; }
+  input:focus,textarea:focus,select:focus { border-color:var(--navy); }
+  input[type=password] { font-family:monospace; letter-spacing:1px; }
+  .hint { font-size:11px; color:var(--sub); margin-top:3px; }
+  #login-error { color:var(--red); font-size:12px; margin-top:10px; min-height:18px; }
 
-  /* ── Login screen ── */
-  #login-screen {
-    max-width: 440px;
-    margin: 80px auto;
-    padding: 0 16px;
-  }
-  .login-card {
-    background: var(--white);
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-  }
-  .login-card h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--navy);
-    margin-bottom: 6px;
-  }
-  .login-card p {
-    color: var(--sub);
-    font-size: 13px;
-    margin-bottom: 28px;
-    line-height: 1.6;
-  }
-  .field-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--navy);
-    margin-bottom: 6px;
-    letter-spacing: 0.2px;
-  }
-  input[type="text"], input[type="password"], textarea, select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-family: inherit;
-    color: var(--text);
-    background: var(--white);
-    transition: border-color 0.15s;
-    outline: none;
-  }
-  input:focus, textarea:focus, select:focus { border-color: var(--navy); }
-  input[type="password"] { font-family: monospace; letter-spacing: 1px; }
-  #login-error {
-    color: var(--red);
-    font-size: 12px;
-    margin-top: 10px;
-    min-height: 18px;
-  }
+  /* Buttons */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border:none; border-radius:var(--radius); font-size:13px; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; font-family:inherit; }
+  .btn:active { transform:scale(.98); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-primary { background:var(--navy); color:#fff; }
+  .btn-primary:hover:not(:disabled) { background:var(--navy-light); }
+  .btn-gold    { background:var(--gold); color:var(--navy); }
+  .btn-gold:hover:not(:disabled) { opacity:.9; }
+  .btn-green   { background:var(--green); color:#fff; }
+  .btn-danger  { background:transparent; color:var(--red); border:1.5px solid #FFCDD2; }
+  .btn-danger:hover:not(:disabled) { background:var(--red-light); }
+  .btn-ghost   { background:transparent; color:var(--sub); border:1.5px solid var(--border); }
+  .btn-ghost:hover:not(:disabled)  { border-color:var(--navy); color:var(--navy); }
+  .btn-full    { width:100%; justify-content:center; padding:11px; }
 
-  /* ── Key type toggle ── */
-  .key-type-row {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-  .key-type-btn {
-    flex: 1;
-    padding: 7px 10px;
-    border-radius: 8px;
-    border: 1.5px solid var(--border);
-    background: var(--white);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--sub);
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-    text-align: center;
-  }
-  .key-type-btn.active {
-    background: var(--navy-pale);
-    border-color: var(--navy);
-    color: var(--navy);
-  }
-  .key-info-box {
-    background: var(--navy-pale);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 13px;
-    font-size: 12px;
-    color: var(--sub);
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-  .key-info-box strong { color: var(--navy); font-weight: 600; }
+  /* App */
+  #app { display:none; }
+  .main-layout { max-width:960px; margin:0 auto; padding:28px 20px 60px; }
 
-  /* ── Buttons ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 18px;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    font-family: inherit;
-    text-decoration: none;
-  }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-primary { background: var(--navy); color: #fff; }
-  .btn-primary:hover:not(:disabled) { background: var(--navy-light); }
-  .btn-gold { background: var(--gold); color: var(--navy); }
-  .btn-gold:hover:not(:disabled) { opacity: 0.9; }
-  .btn-green { background: var(--green); color: #fff; }
-  .btn-green:hover:not(:disabled) { opacity: 0.9; }
-  .btn-danger { background: transparent; color: var(--red); border: 1.5px solid #FFCDD2; }
-  .btn-danger:hover:not(:disabled) { background: var(--red-light); }
-  .btn-ghost { background: transparent; color: var(--sub); border: 1.5px solid var(--border); }
-  .btn-ghost:hover:not(:disabled) { border-color: var(--navy); color: var(--navy); }
-  .btn-full { width: 100%; justify-content: center; padding: 11px; }
+  /* Tabs */
+  .tabs { display:flex; gap:4px; background:var(--white); border:1px solid var(--border); border-radius:12px; padding:4px; margin-bottom:24px; box-shadow:var(--shadow); }
+  .tab-btn { flex:1; padding:9px; border:none; border-radius:8px; background:transparent; font-size:13px; font-weight:500; color:var(--sub); cursor:pointer; transition:all .15s; font-family:inherit; }
+  .tab-btn.active { background:var(--navy); color:#fff; }
 
-  /* ── Main app ── */
-  #app { display: none; }
-  .main-layout {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 28px 20px 60px;
-  }
+  /* Card */
+  .card { background:var(--white); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:20px; }
+  .card-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .card-title { font-size:15px; font-weight:600; color:var(--navy); }
+  .card-body { padding:24px; }
 
-  /* ── Section tabs ── */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow);
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--sub);
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .tab-btn.active { background: var(--navy); color: #fff; }
+  /* Form grid */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-grid .full { grid-column:1/-1; }
+  textarea { resize:vertical; min-height:80px; }
 
-  /* ── Form card ── */
-  .card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .card-title { font-size: 15px; font-weight: 600; color: var(--navy); }
-  .card-subtitle { font-size: 12px; color: var(--sub); margin-top: 2px; }
-  .card-body { padding: 24px; }
+  /* Color + icon pickers */
+  .color-options { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .color-chip { width:32px; height:32px; border-radius:8px; cursor:pointer; border:2.5px solid transparent; transition:transform .1s,border-color .1s; }
+  .color-chip:hover { transform:scale(1.1); }
+  .color-chip.selected { border-color:var(--text); }
+  .icon-options { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .icon-chip { width:36px; height:36px; border-radius:8px; border:1.5px solid var(--border); background:var(--gray); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:all .1s; }
+  .icon-chip:hover,.icon-chip.selected { border-color:var(--navy); background:var(--navy-pale); }
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  .form-grid .full { grid-column: 1 / -1; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  textarea { resize: vertical; min-height: 80px; }
+  /* List items */
+  .item-list { display:flex; flex-direction:column; gap:10px; }
+  .list-item { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; transition:box-shadow .15s; }
+  .list-item:hover { box-shadow:var(--shadow); }
+  .item-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .item-info { flex:1; min-width:0; }
+  .item-title { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item-meta  { font-size:12px; color:var(--sub); margin-top:2px; }
+  .badge { font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; flex-shrink:0; }
+  .badge-event   { background:var(--navy-pale); color:var(--navy); }
+  .badge-session { background:var(--green-light); color:var(--green); }
+  .badge-valid   { background:var(--green-light); color:var(--green); }
+  .badge-used    { background:var(--orange-light); color:var(--orange); }
 
-  /* ── Edit mode banner ── */
-  #edit-banner {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    background: var(--gold-light);
-    border: 1.5px solid var(--gold);
-    border-radius: var(--radius);
-    padding: 10px 16px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    color: #7A5800;
-    font-weight: 500;
+  /* QR preview */
+  #qr-preview-area { margin-top:20px; display:none; }
+  #qr-canvas-wrap  { display:flex; justify-content:center; margin:16px 0; }
+  #qr-canvas-wrap canvas { border:8px solid #fff; border-radius:12px; box-shadow:var(--shadow); }
+  .ticket-preview {
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);
+    border-radius:16px; padding:24px; color:#fff; margin-bottom:16px;
+    display:flex; flex-direction:column; gap:6px;
   }
-  #edit-banner.visible { display: flex; }
-  #edit-banner .edit-banner-icon { font-size: 18px; }
-  #edit-banner .edit-banner-cancel {
-    margin-left: auto;
-    background: transparent;
-    border: none;
-    color: #7A5800;
-    font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-family: inherit;
-  }
-  #edit-banner .edit-banner-cancel:hover { background: rgba(207,155,0,0.15); }
+  .ticket-preview-title { font-size:18px; font-weight:700; }
+  .ticket-preview-sub   { font-size:12px; opacity:.75; }
+  .ticket-preview-code  { font-family:monospace; font-size:13px; background:rgba(255,255,255,.15); padding:6px 12px; border-radius:8px; display:inline-block; margin-top:4px; letter-spacing:1px; }
 
-  /* ── Color picker ── */
-  .color-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .color-chip {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 2.5px solid transparent;
-    transition: transform 0.1s, border-color 0.1s;
-    position: relative;
-  }
-  .color-chip:hover { transform: scale(1.1); }
-  .color-chip.selected { border-color: var(--text); }
-  .color-chip.selected::after {
-    content: '✓';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-  }
+  /* Toast */
+  #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--text); color:#fff; padding:11px 22px; border-radius:10px; font-size:13px; font-weight:500; transition:transform .3s ease; z-index:999; pointer-events:none; white-space:nowrap; }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+  #toast.success { background:var(--green); }
+  #toast.error   { background:var(--red); }
 
-  /* ── Icon picker ── */
-  .icon-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 4px;
-  }
-  .icon-chip {
-    width: 36px; height: 36px;
-    border-radius: 8px;
-    border: 1.5px solid var(--border);
-    background: var(--gray);
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.1s;
-  }
-  .icon-chip:hover { border-color: var(--navy); background: var(--navy-pale); }
-  .icon-chip.selected { border-color: var(--navy); background: var(--navy-pale); box-shadow: 0 0 0 2px var(--navy-pale); }
+  /* Spinner */
+  .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 
-  /* ── Events list ── */
-  .events-list { display: flex; flex-direction: column; gap: 10px; }
-  .event-item {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 1px 4px rgba(26,35,126,0.04);
-    transition: box-shadow 0.15s;
-  }
-  .event-item:hover { box-shadow: var(--shadow); }
-  .event-icon {
-    width: 44px; height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-  .event-info { flex: 1; min-width: 0; }
-  .event-title { font-weight: 600; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .event-meta { font-size: 12px; color: var(--sub); margin-top: 2px; }
-  .event-type {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 9px;
-    border-radius: 20px;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-  .type-event { background: var(--navy-pale); color: var(--navy); }
-  .type-session { background: var(--green-light); color: var(--green); }
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--white); border-radius:16px; padding:28px; max-width:360px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,.18); }
+  .modal h3 { font-size:16px; color:var(--text); margin-bottom:8px; }
+  .modal p  { font-size:13px; color:var(--sub); margin-bottom:24px; line-height:1.5; }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
 
-  .event-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .empty { text-align:center; padding:48px 20px; color:var(--sub); }
+  .empty-icon { font-size:40px; margin-bottom:12px; }
 
-  /* Filter bar */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-  .filter-chip {
-    padding: 5px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1.5px solid var(--border);
-    background: var(--white);
-    color: var(--sub);
-    font-family: inherit;
-    transition: all 0.12s;
-  }
-  .filter-chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
-  .events-count { font-size: 12px; color: var(--sub); margin-left: auto; align-self: center; }
-
-  /* ── Toast ── */
-  #toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--text);
-    color: #fff;
-    padding: 11px 22px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: transform 0.3s ease;
-    z-index: 999;
-    pointer-events: none;
-    white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-  #toast.success { background: var(--green); }
-  #toast.error { background: var(--red); }
-
-  /* ── Spinner ── */
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-  .spinner-dark {
-    border-color: rgba(26,35,126,0.2);
-    border-top-color: var(--navy);
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Empty state ── */
-  .empty {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--sub);
-  }
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .empty p { font-size: 13px; }
-
-  /* ── Confirm modal ── */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.15s ease;
-  }
-  .modal-overlay.open { display: flex; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .modal {
-    background: var(--white);
-    border-radius: 16px;
-    padding: 28px;
-    max-width: 360px;
-    width: 90%;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    animation: slideUp 0.2s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal h3 { font-size: 16px; color: var(--text); margin-bottom: 8px; }
-  .modal p { font-size: 13px; color: var(--sub); margin-bottom: 24px; line-height: 1.5; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
-  @media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .main-layout { padding: 16px 12px 60px; }
-    header { padding: 0 16px; }
-    .event-actions .btn { padding: 5px 10px; font-size: 11px; }
+  @media(max-width:600px){
+    .form-grid { grid-template-columns:1fr; }
+    .main-layout { padding:16px 12px 60px; }
+    header { padding:0 16px; }
   }
 </style>
 </head>
@@ -482,40 +154,31 @@
   <div style="display:flex;align-items:center;gap:12px">
     <span id="status-dot"></span>
     <span id="status-text">Not connected</span>
-    <button class="btn btn-ghost" id="logout-btn" onclick="logout()" style="display:none;color:#fff;border-color:rgba(255,255,255,0.25);font-size:12px;padding:5px 12px">Sign out</button>
+    <button class="btn btn-ghost" id="logout-btn" onclick="logout()" style="display:none;color:#fff;border-color:rgba(255,255,255,.25);font-size:12px;padding:5px 12px">Sign out</button>
   </div>
 </header>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <h2>Sign in to manage events</h2>
-    <p>Enter your JSONBin credentials. They are only stored in your browser session and never sent anywhere else.</p>
+    <h2>Sign in to Admin Panel</h2>
+    <p>Enter your Firebase Realtime Database URL and secret. They stay in your browser session and are never stored elsewhere.</p>
 
-    <div class="field" style="margin-bottom:16px">
-      <label class="field-label" for="bin-id-input">Bin ID</label>
-      <input type="text" id="bin-id-input" placeholder="e.g. 6650f2e5acd3cb34a85...">
+    <div class="section-head">Firebase Realtime Database</div>
+    <div class="field">
+      <label class="field-label">Database URL</label>
+      <input type="text" id="firebase-url" placeholder="https://your-project-default-rtdb.firebaseio.com">
+      <span class="hint">Found in Firebase Console → Realtime Database → Data tab (top of page).</span>
     </div>
 
-    <div class="field" style="margin-bottom:10px">
-      <label class="field-label">Key type</label>
-      <div class="key-type-row">
-        <button class="key-type-btn active" id="kt-master" onclick="setKeyType('master')">Master Key</button>
-        <button class="key-type-btn" id="kt-access" onclick="setKeyType('access')">Access Key</button>
-      </div>
+    <div class="section-head">Admin Secret (Database Secret)</div>
+    <div class="field">
+      <label class="field-label">Database Secret</label>
+      <input type="password" id="api-key-input" placeholder="Your Firebase database secret...">
+      <span class="hint">Firebase Console → Project Settings → Service Accounts → Database Secrets.</span>
     </div>
 
-    <div id="key-info-box" class="key-info-box">
-      <strong>Master Key</strong> — full access to all your bins. Use this if you're the bin owner.<br>
-      Found in JSONBin → Account → API Keys → Master Key.
-    </div>
-
-    <div class="field" style="margin-bottom:20px">
-      <label class="field-label" for="api-key-input" id="api-key-label">Master Key</label>
-      <input type="password" id="api-key-input" placeholder="$2a$10$..." autocomplete="current-password">
-    </div>
-
-    <button class="btn btn-primary btn-full" id="login-btn" onclick="connect()">
+    <button class="btn btn-primary btn-full" onclick="connect()" style="margin-top:8px">
       <span id="login-btn-text">Connect</span>
     </button>
     <div id="login-error"></div>
@@ -527,108 +190,143 @@
   <div class="main-layout">
 
     <div class="tabs">
-      <button class="tab-btn active" id="tab-btn-add" onclick="switchTab('add')">Add event</button>
-      <button class="tab-btn" id="tab-btn-manage" onclick="switchTab('manage')">Manage events</button>
+      <button class="tab-btn active"  onclick="switchTab('events')">📅 Events</button>
+      <button class="tab-btn"         onclick="switchTab('tickets')">🎫 Tickets</button>
+      <button class="tab-btn"         onclick="switchTab('manage-events')">⚙️ Manage Events</button>
+      <button class="tab-btn"         onclick="switchTab('manage-tickets')">⚙️ Manage Tickets</button>
     </div>
 
-    <!-- ADD / EDIT EVENT TAB -->
-    <div id="tab-add">
-
-      <!-- Edit mode banner -->
-      <div id="edit-banner">
-        <span class="edit-banner-icon">✏️</span>
-        <span id="edit-banner-text">Editing event</span>
-        <button class="edit-banner-cancel" onclick="cancelEdit()">✕ Cancel edit</button>
-      </div>
-
+    <!-- ADD EVENT -->
+    <div id="tab-events">
       <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title" id="form-card-title">New event or session</div>
-            <div class="card-subtitle" id="form-card-subtitle">Saved events appear in the app within ~15 minutes.</div>
-          </div>
-        </div>
+        <div class="card-header"><span class="card-title">Add Event or Session</span></div>
         <div class="card-body">
           <div class="form-grid">
-
             <div class="field full">
-              <label class="field-label" for="f-title">Title *</label>
-              <input type="text" id="f-title" placeholder="e.g. Career Fair 2025">
+              <label class="field-label">Title *</label>
+              <input type="text" id="e-title" placeholder="e.g. Career Fair 2025">
             </div>
-
             <div class="field">
-              <label class="field-label" for="f-type">Type *</label>
-              <select id="f-type">
+              <label class="field-label">Type *</label>
+              <select id="e-type">
                 <option value="event">Event (Upcoming Events tab)</option>
                 <option value="session">Session (Work Sessions tab)</option>
               </select>
             </div>
-
             <div class="field">
-              <label class="field-label" for="f-date">Display date *</label>
-              <input type="text" id="f-date" placeholder="e.g. 15 Oct 2025">
+              <label class="field-label">Display date *</label>
+              <input type="text" id="e-date" placeholder="e.g. 15 Oct 2025">
             </div>
-
             <div class="field">
-              <label class="field-label" for="f-datetime">Date &amp; time *</label>
-              <input type="datetime-local" id="f-datetime">
+              <label class="field-label">Date & time *</label>
+              <input type="datetime-local" id="e-datetime">
             </div>
-
             <div class="field">
-              <label class="field-label" for="f-location">Location *</label>
-              <input type="text" id="f-location" placeholder="e.g. Main Hall, Faculty of Engineering">
+              <label class="field-label">Location *</label>
+              <input type="text" id="e-location" placeholder="e.g. Main Hall">
             </div>
-
             <div class="field full">
-              <label class="field-label" for="f-description">Description *</label>
-              <textarea id="f-description" placeholder="Short description shown in the app..."></textarea>
+              <label class="field-label">Description *</label>
+              <textarea id="e-description" placeholder="Short description shown in the app..."></textarea>
             </div>
-
             <div class="field full">
               <label class="field-label">Icon</label>
-              <div class="icon-options" id="icon-picker"></div>
+              <div class="icon-options" id="event-icon-picker"></div>
             </div>
-
             <div class="field full">
               <label class="field-label">Color</label>
-              <div class="color-options" id="color-picker"></div>
+              <div class="color-options" id="event-color-picker"></div>
             </div>
-
           </div>
-
-          <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end">
-            <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
-            <button class="btn btn-gold" id="save-btn" onclick="saveEvent()">
-              <span id="save-btn-text">Save event</span>
-            </button>
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+            <button class="btn btn-ghost" onclick="clearEventForm()">Clear</button>
+            <button class="btn btn-gold" id="save-event-btn" onclick="saveEvent()">Save event</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- MANAGE TAB -->
-    <div id="tab-manage" style="display:none">
+    <!-- ADD TICKET -->
+    <div id="tab-tickets" style="display:none">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Create Ticket</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field">
+              <label class="field-label">Student name *</label>
+              <input type="text" id="t-holder" placeholder="e.g. Ahmed Mohamed">
+            </div>
+            <div class="field">
+              <label class="field-label">Event name *</label>
+              <input type="text" id="t-event" placeholder="e.g. Career Fair 2025">
+            </div>
+            <div class="field">
+              <label class="field-label">Event date *</label>
+              <input type="text" id="t-date" placeholder="e.g. 15 Oct 2025">
+            </div>
+            <div class="field">
+              <label class="field-label">Ticket code</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="t-code" placeholder="Auto-generated" style="flex:1">
+                <button class="btn btn-ghost" onclick="generateCode()" style="white-space:nowrap">Generate</button>
+              </div>
+              <span class="hint">Or type your own code. Must be unique.</span>
+            </div>
+            <div class="field full">
+              <label class="field-label">Icon</label>
+              <div class="icon-options" id="ticket-icon-picker"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+            <button class="btn btn-ghost" onclick="clearTicketForm()">Clear</button>
+            <button class="btn btn-gold" id="save-ticket-btn" onclick="saveAndPreviewTicket()">Save & Generate QR</button>
+          </div>
+
+          <!-- QR Preview -->
+          <div id="qr-preview-area">
+            <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+            <div class="card-title" style="margin-bottom:16px">🎫 Ticket QR Code</div>
+            <div class="ticket-preview" id="ticket-preview-card">
+              <div class="ticket-preview-title" id="tp-event"></div>
+              <div class="ticket-preview-sub"   id="tp-holder"></div>
+              <div class="ticket-preview-sub"   id="tp-date"></div>
+              <div class="ticket-preview-code"  id="tp-code"></div>
+            </div>
+            <div id="qr-canvas-wrap"><canvas id="qr-canvas" width="220" height="220"></canvas></div>
+            <p style="text-align:center;font-size:12px;color:var(--sub);margin-bottom:16px">
+              Right-click the QR code → Save image → Send to student via WhatsApp or email
+            </p>
+            <div style="display:flex;gap:10px;justify-content:center">
+              <button class="btn btn-primary" onclick="downloadQR()">⬇ Download QR Image</button>
+              <button class="btn btn-ghost"   onclick="copyCode()">📋 Copy Code</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGE EVENTS -->
+    <div id="tab-manage-events" style="display:none">
       <div class="card">
         <div class="card-header">
-          <div>
-            <div class="card-title">All events &amp; sessions</div>
-            <div class="card-subtitle" id="manage-subtitle">Sorted by date</div>
-          </div>
-          <button class="btn btn-ghost" onclick="loadEvents()" style="font-size:12px;padding:5px 12px">↻ Refresh</button>
+          <span class="card-title">All Events & Sessions</span>
+          <button class="btn btn-ghost" onclick="loadEvents()" style="font-size:12px;padding:5px 12px">Refresh</button>
         </div>
         <div class="card-body" style="padding:16px">
-          <div class="filter-bar" id="filter-bar" style="display:none">
-            <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
-            <button class="filter-chip" onclick="setFilter('event', this)">Events</button>
-            <button class="filter-chip" onclick="setFilter('session', this)">Sessions</button>
-            <span class="events-count" id="filter-count"></span>
-          </div>
-          <div id="events-list-container">
-            <div class="empty">
-              <div class="empty-icon">📅</div>
-              <p>Loading events…</p>
-            </div>
-          </div>
+          <div id="events-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGE TICKETS -->
+    <div id="tab-manage-tickets" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Tickets</span>
+          <button class="btn btn-ghost" onclick="loadTickets()" style="font-size:12px;padding:5px 12px">Refresh</button>
+        </div>
+        <div class="card-body" style="padding:16px">
+          <div id="tickets-list"></div>
         </div>
       </div>
     </div>
@@ -636,420 +334,409 @@
   </div>
 </div>
 
-<!-- CONFIRM DELETE MODAL -->
+<!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal">
-    <h3>Remove this event?</h3>
-    <p id="confirm-modal-text">This will remove the event from the app. Students will no longer see it.</p>
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p id="confirm-text"></p>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()">Remove</button>
+      <button class="btn btn-ghost"   onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger"  onclick="confirmAction()" id="confirm-ok">Confirm</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────
-let BIN_ID   = '';
-let API_KEY  = '';
-let KEY_TYPE = 'master';  // 'master' | 'access'
-let allEvents  = [];
-let deleteIndex = null;
-let editIndex   = null;   // null = adding new; number = editing existing
-let activeFilter = 'all';
+// ─── State ────────────────────────────────────────────────────────────────────
+let DB_URL = '', API_KEY = '';   // Firebase Realtime Database URL + secret
+let allEvents = [], allTickets = [];
+let pendingAction = null;
 
-const ICONS = ['🎪','📝','🚀','🎤','🤝','📄','🌐','🗣️','💻','💼','🎓','📅','🏆','🔬','⚙️','📊','🧑‍💻','🎯','🎉','📣'];
-const COLORS = [
-  { hex: '#1A237E', label: 'Navy' },
-  { hex: '#00695C', label: 'Teal' },
-  { hex: '#6A1B9A', label: 'Purple' },
-  { hex: '#BF360C', label: 'Orange' },
-  { hex: '#0A66C2', label: 'LinkedIn Blue' },
-  { hex: '#1565C0', label: 'Blue' },
-  { hex: '#CF9B00', label: 'Gold' },
-  { hex: '#2E7D32', label: 'Green' },
-  { hex: '#AD1457', label: 'Pink' },
-  { hex: '#4E342E', label: 'Brown' },
+let selEventIcon  = '🎪', selEventColor  = '#1A237E';
+let selTicketIcon = '🎫';
+let lastSavedTicket = null;
+
+const ICONS   = ['🎪','📝','🚀','🎤','🤝','📄','🌐','🗣️','💻','💼','🎓','📅','🏆','🔬','⚙️','📊','🎯','🎫'];
+const TICONS  = ['🎫','🎪','📝','🚀','🎤','🤝','🎓','🏆','💡','🔬'];
+const COLORS  = [
+  {h:'#1A237E',l:'Navy'},{h:'#00695C',l:'Teal'},{h:'#6A1B9A',l:'Purple'},
+  {h:'#BF360C',l:'Orange'},{h:'#0A66C2',l:'Blue'},{h:'#1565C0',l:'Steel Blue'},
+  {h:'#CF9B00',l:'Gold'},{h:'#2E7D32',l:'Green'},{h:'#AD1457',l:'Pink'},
 ];
 
-let selectedIcon  = ICONS[0];
-let selectedColor = COLORS[0].hex;
-
-// ── Init ──────────────────────────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 window.onload = () => {
-  buildIconPicker();
-  buildColorPicker();
-  const now = new Date();
-  now.setMinutes(0, 0, 0);
-  document.getElementById('f-datetime').value = now.toISOString().slice(0,16);
-
-  // Allow pressing Enter in login fields
-  ['bin-id-input','api-key-input'].forEach(id =>
-    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') connect(); })
-  );
+  buildPicker('event-icon-picker',  ICONS,  selEventIcon,  'event-icon');
+  buildPicker('event-color-picker', COLORS, selEventColor, 'event-color', true);
+  buildPicker('ticket-icon-picker', TICONS, selTicketIcon, 'ticket-icon');
+  const now = new Date(); now.setMinutes(0,0,0);
+  document.getElementById('e-datetime').value = now.toISOString().slice(0,16);
+  generateCode();
 };
 
-function buildIconPicker() {
-  document.getElementById('icon-picker').innerHTML = ICONS.map(ic =>
-    `<div class="icon-chip${ic===selectedIcon?' selected':''}" onclick="selectIcon('${ic}')" title="${ic}" role="button" tabindex="0">${ic}</div>`
-  ).join('');
+function buildPicker(containerId, items, selected, type, isColor=false) {
+  const el = document.getElementById(containerId);
+  if (isColor) {
+    el.innerHTML = items.map(c =>
+      `<div class="color-chip${c.h===selected?' selected':''}" style="background:${c.h}"
+            onclick="selectOption('${type}','${c.h}','${containerId}',true)" title="${c.l}"></div>`
+    ).join('');
+  } else {
+    el.innerHTML = items.map(ic =>
+      `<div class="icon-chip${ic===selected?' selected':''}"
+            onclick="selectOption('${type}','${ic}','${containerId}',false)">${ic}</div>`
+    ).join('');
+  }
 }
 
-function buildColorPicker() {
-  document.getElementById('color-picker').innerHTML = COLORS.map(c =>
-    `<div class="color-chip${c.hex===selectedColor?' selected':''}" style="background:${c.hex}" onclick="selectColor('${c.hex}')" title="${c.label}" role="button" tabindex="0" aria-label="${c.label}"></div>`
-  ).join('');
+function selectOption(type, val, containerId, isColor) {
+  if (type==='event-icon')  selEventIcon  = val;
+  if (type==='event-color') selEventColor = val;
+  if (type==='ticket-icon') selTicketIcon = val;
+  buildPicker(containerId, isColor ? COLORS : (type==='ticket-icon'?TICONS:ICONS), val, type, isColor);
 }
 
-function selectIcon(ic) { selectedIcon = ic; buildIconPicker(); }
-function selectColor(hex) { selectedColor = hex; buildColorPicker(); }
-
-// ── Key type toggle ────────────────────────────────────────────────────────
-function setKeyType(type) {
-  KEY_TYPE = type;
-  document.getElementById('kt-master').classList.toggle('active', type === 'master');
-  document.getElementById('kt-access').classList.toggle('active', type === 'access');
-  document.getElementById('api-key-label').textContent = type === 'master' ? 'Master Key' : 'Access Key';
-  document.getElementById('api-key-input').placeholder = type === 'master' ? '$2a$10$...' : '$2b$10$...';
-  document.getElementById('key-info-box').innerHTML = type === 'master'
-    ? '<strong>Master Key</strong> — full access to all your bins. Use this if you\'re the bin owner.<br>Found in JSONBin → Account → API Keys → Master Key.'
-    : '<strong>Access Key</strong> — scoped key with limited permissions. Safer to share with team members.<br>Found in JSONBin → Account → API Keys → Access Keys. Make sure it has <strong>Read &amp; Write</strong> permission on this bin.';
-}
-
-// ── Auth ──────────────────────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 async function connect() {
-  const binId  = document.getElementById('bin-id-input').value.trim();
-  const apiKey = document.getElementById('api-key-input').value.trim();
+  const dbUrl  = document.getElementById('firebase-url').value.trim().replace(/\/$/, '');
+  const secret = document.getElementById('api-key-input').value.trim();
   const errEl  = document.getElementById('login-error');
-  const btn    = document.getElementById('login-btn');
-  const btnTxt = document.getElementById('login-btn-text');
+  const btn    = document.querySelector('#login-screen .btn-primary');
 
   errEl.textContent = '';
-  if (!binId || !apiKey) { errEl.textContent = 'Both fields are required.'; return; }
+  if (!dbUrl || !secret) { errEl.textContent = 'Both fields are required.'; return; }
+  if (!dbUrl.startsWith('https://')) { errEl.textContent = 'Database URL must start with https://'; return; }
 
   btn.disabled = true;
-  btnTxt.innerHTML = '<div class="spinner"></div>';
+  document.getElementById('login-btn-text').textContent = 'Connecting...';
 
   try {
-    const headers = buildHeaders();
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-      headers: { ...headers, 'X-Bin-Meta': 'false' }
-    });
-    if (res.status === 401) throw new Error(KEY_TYPE === 'master'
-      ? 'Invalid Master Key. Check it in JSONBin → Account → API Keys.'
-      : 'Invalid Access Key, or it lacks Read permission on this bin.');
-    if (res.status === 403) throw new Error('Access denied. Make sure the Access Key has Read & Write permission on this bin.');
-    if (res.status === 404) throw new Error('Bin ID not found. Double-check the Bin ID.');
-    if (!res.ok) throw new Error(`Error ${res.status}. Check your credentials.`);
+    // Test connection by reading both nodes
+    const [r1, r2] = await Promise.all([
+      fetch(`${dbUrl}/events.json?auth=${secret}`),
+      fetch(`${dbUrl}/tickets.json?auth=${secret}`),
+    ]);
+    if (r1.status === 401 || r2.status === 401) throw new Error('Invalid secret. Check your Database Secret in Firebase Console.');
+    if (r1.status === 403 || r2.status === 403) throw new Error('Permission denied. Check your Firebase database rules.');
+    if (!r1.ok) throw new Error(`Events node error: HTTP ${r1.status}`);
+    if (!r2.ok) throw new Error(`Tickets node error: HTTP ${r2.status}`);
 
-    const data = await res.json();
-    allEvents  = normaliseData(data);
-    BIN_ID    = binId;
-    API_KEY   = apiKey;
+    allEvents  = firebaseToList(await r1.json());
+    allTickets = firebaseToList(await r2.json());
+
+    DB_URL  = dbUrl;
+    API_KEY = secret;
 
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('logout-btn').style.display = 'flex';
-    setStatus('connected', `Connected · ${allEvents.length} event${allEvents.length !== 1 ? 's' : ''}`);
-    renderEventsList();
-  } catch (e) {
+    setStatus('connected', `Connected · ${allEvents.length} events · ${allTickets.length} tickets`);
+
+  } catch(e) {
     errEl.textContent = e.message;
-    setStatus('error', 'Connection failed');
+    setStatus('error','Connection failed');
   } finally {
     btn.disabled = false;
-    btnTxt.textContent = 'Connect';
+    document.getElementById('login-btn-text').textContent = 'Connect';
   }
 }
 
 function logout() {
-  BIN_ID = ''; API_KEY = ''; KEY_TYPE = 'master'; allEvents = []; editIndex = null;
-  document.getElementById('login-screen').style.display = 'block';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('logout-btn').style.display = 'none';
-  document.getElementById('bin-id-input').value = '';
-  document.getElementById('api-key-input').value = '';
-  setKeyType('master');
-  setStatus('', 'Not connected');
+  DB_URL=''; API_KEY=''; allEvents=[]; allTickets=[];
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('app').style.display='none';
+  document.getElementById('logout-btn').style.display='none';
+  ['firebase-url','api-key-input'].forEach(id => document.getElementById(id).value='');
+  setStatus('','Not connected');
 }
 
-function setStatus(type, text) {
+function setStatus(type,text) {
   document.getElementById('status-dot').className = type;
   document.getElementById('status-text').textContent = text;
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────────────
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+const TAB_IDS = ['events','tickets','manage-events','manage-tickets'];
 function switchTab(tab) {
-  document.getElementById('tab-add').style.display    = tab === 'add'    ? 'block' : 'none';
-  document.getElementById('tab-manage').style.display = tab === 'manage' ? 'block' : 'none';
-  document.getElementById('tab-btn-add').classList.toggle('active',    tab === 'add');
-  document.getElementById('tab-btn-manage').classList.toggle('active', tab === 'manage');
-  if (tab === 'manage') loadEvents();
+  TAB_IDS.forEach((t,i) => {
+    document.getElementById(`tab-${t}`).style.display = t===tab?'block':'none';
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t===tab);
+  });
+  if (tab==='manage-events')  loadEvents();
+  if (tab==='manage-tickets') loadTickets();
 }
 
-// ── Save / update event ────────────────────────────────────────────────────
+// ─── Events ───────────────────────────────────────────────────────────────────
 async function saveEvent() {
-  const title       = document.getElementById('f-title').value.trim();
-  const type        = document.getElementById('f-type').value;
-  const date        = document.getElementById('f-date').value.trim();
-  const datetimeVal = document.getElementById('f-datetime').value;
-  const location    = document.getElementById('f-location').value.trim();
-  const description = document.getElementById('f-description').value.trim();
+  const title       = document.getElementById('e-title').value.trim();
+  const type        = document.getElementById('e-type').value;
+  const date        = document.getElementById('e-date').value.trim();
+  const datetimeVal = document.getElementById('e-datetime').value;
+  const location    = document.getElementById('e-location').value.trim();
+  const description = document.getElementById('e-description').value.trim();
+  if (!title||!date||!datetimeVal||!location||!description) { showToast('Fill in all fields.','error'); return; }
 
-  if (!title || !date || !datetimeVal || !location || !description) {
-    showToast('Please fill in all required fields.', 'error');
-    return;
-  }
-
-  const eventObj = {
-    title, date, type, location, description,
-    dateTime: new Date(datetimeVal).toISOString(),
-    icon:  selectedIcon,
-    color: selectedColor,
-  };
-
-  const btn    = document.getElementById('save-btn');
-  const btnTxt = document.getElementById('save-btn-text');
-  btn.disabled = true;
-  btnTxt.innerHTML = '<div class="spinner spinner-dark"></div> Saving…';
-
+  const btn = document.getElementById('save-event-btn');
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Saving...';
   try {
-    let updated;
-    const isEditing = editIndex !== null;
-
-    if (isEditing) {
-      updated = allEvents.map((e, i) => i === editIndex ? eventObj : e);
-    } else {
-      updated = [...allEvents, eventObj];
-    }
-
-    await pushToJsonBin(updated);
-    allEvents = updated;
-    clearForm();
-    showToast(isEditing ? 'Event updated!' : 'Event saved! App updates in ~15 min.', 'success');
-    setStatus('connected', `Connected · ${allEvents.length} event${allEvents.length !== 1 ? 's' : ''}`);
-  } catch (e) {
-    showToast('Save failed: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btnTxt.textContent = editIndex !== null ? 'Save changes' : 'Save event';
-  }
+    const newEvent = {title,date,type,location,description,
+      dateTime:new Date(datetimeVal).toISOString(), icon:selEventIcon, color:selEventColor};
+    await firebasePush('events', newEvent);
+    allEvents = [...allEvents, newEvent];
+    clearEventForm();
+    showToast('Event saved! App updates on next foreground.','success');
+    updateStatus();
+  } catch(e) { showToast('Save failed: '+e.message,'error'); }
+  finally { btn.disabled=false; btn.textContent='Save event'; }
 }
 
-// ── Load & render events ───────────────────────────────────────────────────
 async function loadEvents() {
-  const container = document.getElementById('events-list-container');
-  container.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><p>Loading…</p></div>';
-  document.getElementById('filter-bar').style.display = 'none';
-
+  const el = document.getElementById('events-list');
+  el.innerHTML = loading();
   try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-      headers: { ...buildHeaders(), 'X-Bin-Meta': 'false' }
-    });
+    const res = await fetch(`${DB_URL}/events.json?auth=${API_KEY}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    allEvents = normaliseData(await res.json());
-    renderEventsList();
-    setStatus('connected', `Connected · ${allEvents.length} event${allEvents.length !== 1 ? 's' : ''}`);
-  } catch (e) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load: ${escHtml(e.message)}</p></div>`;
-  }
+    allEvents = firebaseToList(await res.json());
+    renderEvents();
+    updateStatus();
+  } catch(e) { el.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><p>${e.message}</p></div>`; }
 }
 
-function renderEventsList() {
-  const container = document.getElementById('events-list-container');
-  const filterBar = document.getElementById('filter-bar');
-
-  if (allEvents.length === 0) {
-    filterBar.style.display = 'none';
-    container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>No events yet. Add one from the "Add event" tab.</p></div>';
-    return;
-  }
-
-  filterBar.style.display = 'flex';
-
-  // Sort ascending by dateTime
-  const sorted = [...allEvents]
-    .map((e, i) => ({ ...e, _orig: i }))
-    .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
-
-  const filtered = activeFilter === 'all' ? sorted : sorted.filter(e => e.type === activeFilter);
-
-  document.getElementById('filter-count').textContent =
-    filtered.length === allEvents.length
-      ? `${allEvents.length} total`
-      : `${filtered.length} of ${allEvents.length}`;
-
-  document.getElementById('manage-subtitle').textContent =
-    `${allEvents.length} item${allEvents.length !== 1 ? 's' : ''} · sorted by date`;
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>No items match this filter.</p></div>';
-    return;
-  }
-
-  container.innerHTML = `<div class="events-list">
-    ${filtered.map(e => `
-      <div class="event-item" id="event-item-${e._orig}">
-        <div class="event-icon" style="background:${escHtml(e.color)}22">${e.icon}</div>
-        <div class="event-info">
-          <div class="event-title" title="${escHtml(e.title)}">${escHtml(e.title)}</div>
-          <div class="event-meta">${escHtml(e.date)} · ${escHtml(e.location)}</div>
-        </div>
-        <span class="event-type ${e.type === 'session' ? 'type-session' : 'type-event'}">${e.type === 'session' ? 'Session' : 'Event'}</span>
-        <div class="event-actions">
-          <button class="btn btn-ghost" style="padding:5px 11px;font-size:12px" onclick="startEdit(${e._orig})" title="Edit this event">✏️ Edit</button>
-          <button class="btn btn-danger" style="padding:5px 11px;font-size:12px" onclick="askDelete(${e._orig})" title="Remove this event">Remove</button>
-        </div>
+function renderEvents() {
+  const el = document.getElementById('events-list');
+  if (!allEvents.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>No events yet.</p></div>'; return; }
+  const sorted = [...allEvents].map((e,i)=>({...e,_i:i})).sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+  el.innerHTML = `<div class="item-list">${sorted.map((e)=>`
+    <div class="list-item">
+      <div class="item-icon" style="background:${e.color}22">${e.icon}</div>
+      <div class="item-info">
+        <div class="item-title">${esc(e.title)}</div>
+        <div class="item-meta">${esc(e.date)} · ${esc(e.location)}</div>
       </div>
-    `).join('')}
-  </div>`;
+      <span class="badge badge-${e.type}">${e.type==='session'?'Session':'Event'}</span>
+      <button class="btn btn-danger" style="padding:6px 12px;font-size:12px" onclick="askDelete('event',${e._i},'${esc(e.title)}','${esc(e._fbKey||'')}')">Remove</button>
+    </div>`).join('')}</div>`;
 }
 
-// ── Filter ─────────────────────────────────────────────────────────────────
-function setFilter(type, btn) {
-  activeFilter = type;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  renderEventsList();
+// ─── Tickets ──────────────────────────────────────────────────────────────────
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand  = n => Array.from({length:n},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  document.getElementById('t-code').value = `UCCD-${rand(4)}-${rand(4)}`;
 }
 
-// ── Edit ───────────────────────────────────────────────────────────────────
-function startEdit(idx) {
-  const e = allEvents[idx];
-  editIndex = idx;
+async function saveAndPreviewTicket() {
+  const holder = document.getElementById('t-holder').value.trim();
+  const event  = document.getElementById('t-event').value.trim();
+  const date   = document.getElementById('t-date').value.trim();
+  const code   = document.getElementById('t-code').value.trim().toUpperCase();
+  if (!holder||!event||!date||!code) { showToast('Fill in all ticket fields.','error'); return; }
 
-  document.getElementById('f-title').value       = e.title       || '';
-  document.getElementById('f-type').value        = e.type        || 'event';
-  document.getElementById('f-date').value        = e.date        || '';
-  document.getElementById('f-location').value    = e.location    || '';
-  document.getElementById('f-description').value = e.description || '';
-
-  if (e.dateTime) {
-    // Convert ISO to local datetime-local format
-    const d = new Date(e.dateTime);
-    const pad = n => String(n).padStart(2,'0');
-    const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    document.getElementById('f-datetime').value = local;
+  // Check duplicate code
+  if (allTickets.some(t=>t.code.toUpperCase()===code)) {
+    showToast('This code already exists. Generate a new one.','error'); return;
   }
 
-  selectedIcon  = e.icon  || ICONS[0];
-  selectedColor = e.color || COLORS[0].hex;
-  buildIconPicker();
-  buildColorPicker();
+  const btn = document.getElementById('save-ticket-btn');
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Saving...';
 
-  // Update form UI to edit mode
-  document.getElementById('form-card-title').textContent   = 'Edit event';
-  document.getElementById('form-card-subtitle').textContent = 'Changes will go live in the app within ~15 minutes.';
-  document.getElementById('save-btn-text').textContent     = 'Save changes';
-  document.getElementById('edit-banner-text').textContent  = `Editing: ${e.title}`;
-  document.getElementById('edit-banner').classList.add('visible');
-
-  switchTab('add');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const ticket = { code, event, holder, date, icon:selTicketIcon, used:false };
+  try {
+    await firebasePush('tickets', ticket);
+    allTickets  = [...allTickets, ticket];
+    lastSavedTicket = ticket;
+    showQRPreview(ticket);
+    showToast('Ticket saved! QR generated below.','success');
+    updateStatus();
+  } catch(e) { showToast('Save failed: '+e.message,'error'); }
+  finally { btn.disabled=false; btn.textContent='Save & Generate QR'; }
 }
 
-function cancelEdit() {
-  clearForm(); // also resets editIndex and UI labels
+function showQRPreview(ticket) {
+  document.getElementById('tp-event').textContent  = `${ticket.icon} ${ticket.event}`;
+  document.getElementById('tp-holder').textContent = `👤 ${ticket.holder}`;
+  document.getElementById('tp-date').textContent   = `📅 ${ticket.date}`;
+  document.getElementById('tp-code').textContent   = ticket.code;
+  document.getElementById('qr-preview-area').style.display = 'block';
+  drawQR(ticket.code);
+  document.getElementById('qr-preview-area').scrollIntoView({behavior:'smooth'});
 }
 
-// ── Delete ─────────────────────────────────────────────────────────────────
-function askDelete(idx) {
-  deleteIndex = idx;
-  const e = allEvents[idx];
-  document.getElementById('confirm-modal-text').textContent =
-    `"${e.title}" on ${e.date} will be removed from the app. This cannot be undone.`;
+function drawQR(text) {
+  const canvas = document.getElementById('qr-canvas');
+  const ctx    = canvas.getContext('2d');
+  const size   = 220;
+  canvas.width = canvas.height = size;
+
+  // Simple QR-like visual using a real URL-based approach
+  // We encode the text into a data URL for an online QR service
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => ctx.drawImage(img, 0, 0, size, size);
+  img.onerror = () => {
+    // Fallback: draw placeholder
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#1A237E'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('QR Code', size/2, size/2-8);
+    ctx.font='11px monospace'; ctx.fillText(text, size/2, size/2+12);
+  };
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}&margin=10&color=1A237E`;
+}
+
+function downloadQR() {
+  if (!lastSavedTicket) return;
+  const canvas = document.getElementById('qr-canvas');
+  const link   = document.createElement('a');
+  link.download = `ticket-${lastSavedTicket.code}.png`;
+  link.href     = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function copyCode() {
+  if (!lastSavedTicket) return;
+  navigator.clipboard.writeText(lastSavedTicket.code)
+    .then(() => showToast('Code copied to clipboard!','success'));
+}
+
+async function loadTickets() {
+  const el = document.getElementById('tickets-list');
+  el.innerHTML = loading();
+  try {
+    const res  = await fetch(`${DB_URL}/tickets.json?auth=${API_KEY}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    allTickets = firebaseToList(await res.json());
+    renderTickets();
+    updateStatus();
+  } catch(e) { el.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><p>${e.message}</p></div>`; }
+}
+
+function renderTickets() {
+  const el = document.getElementById('tickets-list');
+  if (!allTickets.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🎫</div><p>No tickets yet.</p></div>'; return; }
+  el.innerHTML = `<div class="item-list">${allTickets.map((t,i)=>`
+    <div class="list-item">
+      <div class="item-icon" style="background:#E8EAF6">${t.icon||'🎫'}</div>
+      <div class="item-info">
+        <div class="item-title">${esc(t.holder)} — ${esc(t.event)}</div>
+        <div class="item-meta">${esc(t.date)} · <code style="font-size:11px">${esc(t.code)}</code></div>
+      </div>
+      <span class="badge ${t.used?'badge-used':'badge-valid'}">${t.used?'Used':'Valid'}</span>
+      <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="regenQR(${i})">QR</button>
+      <button class="btn btn-danger" style="padding:6px 12px;font-size:12px" onclick="askDelete('ticket',${i},'${esc(t.holder)}','${esc(t._fbKey||'')}')">Remove</button>
+    </div>`).join('')}</div>`;
+}
+
+function regenQR(idx) {
+  const t = allTickets[idx];
+  switchTab('tickets');
+  document.getElementById('t-holder').value = t.holder;
+  document.getElementById('t-event').value  = t.event;
+  document.getElementById('t-date').value   = t.date;
+  document.getElementById('t-code').value   = t.code;
+  lastSavedTicket = t;
+  showQRPreview(t);
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+function askDelete(type, idx, name, firebaseKey) {
+  pendingAction = {type, idx, firebaseKey};
+  document.getElementById('confirm-title').textContent = type==='event' ? 'Remove event?' : 'Remove ticket?';
+  document.getElementById('confirm-text').textContent  =
+    type==='event'
+      ? `"${name}" will be removed from the app.`
+      : `Ticket for "${name}" will be removed. The QR code will stop working immediately.`;
   document.getElementById('confirm-modal').classList.add('open');
 }
 
-function closeModal() {
-  document.getElementById('confirm-modal').classList.remove('open');
-  deleteIndex = null;
-}
+function closeModal() { document.getElementById('confirm-modal').classList.remove('open'); pendingAction=null; }
 
-async function confirmDelete() {
-  if (deleteIndex === null) return;
-  const btn = document.getElementById('confirm-delete-btn');
-  btn.disabled = true;
-  btn.textContent = 'Removing…';
-
-  const updated = allEvents.filter((_, i) => i !== deleteIndex);
+async function confirmAction() {
+  closeModal();
+  if (!pendingAction) return;
+  const {type, idx, firebaseKey} = pendingAction;
   try {
-    await pushToJsonBin(updated);
-    allEvents = updated;
-    renderEventsList();
-    showToast('Event removed.', 'success');
-    setStatus('connected', `Connected · ${allEvents.length} event${allEvents.length !== 1 ? 's' : ''}`);
-  } catch (e) {
-    showToast('Remove failed: ' + e.message, 'error');
-  } finally {
-    closeModal();
-    btn.disabled = false;
-    btn.textContent = 'Remove';
-  }
+    if (type==='event') {
+      await firebaseDelete('events', firebaseKey);
+      allEvents = allEvents.filter((_,i)=>i!==idx);
+      renderEvents();
+    } else {
+      await firebaseDelete('tickets', firebaseKey);
+      allTickets = allTickets.filter((_,i)=>i!==idx);
+      renderTickets();
+    }
+    showToast(`${type==='event'?'Event':'Ticket'} removed.`,'success');
+    updateStatus();
+  } catch(e) { showToast('Remove failed: '+e.message,'error'); }
 }
 
-// ── JSONBin PUT ────────────────────────────────────────────────────────────
-async function pushToJsonBin(data) {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...buildHeaders() },
+// ─── Firebase REST helpers ────────────────────────────────────────────────────
+
+/** POST to a node — Firebase auto-generates a unique push key. Returns the key. */
+async function firebasePush(node, data) {
+  const res = await fetch(`${DB_URL}/${node}.json?auth=${API_KEY}`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
     body: JSON.stringify(data),
   });
-  if (!res.ok) {
-    const body = await res.text();
-    if (res.status === 401 || res.status === 403)
-      throw new Error('Write permission denied. If using an Access Key, make sure it has Write access to this bin.');
-    throw new Error(`HTTP ${res.status}: ${body}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  return json.name; // Firebase returns { "name": "-NxPushKey..." }
+}
+
+/** DELETE a specific node by its Firebase push key. */
+async function firebaseDelete(node, key) {
+  const res = await fetch(`${DB_URL}/${node}/${key}.json?auth=${API_KEY}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
+/** Convert Firebase response (null | Map<key,obj> | List) to a flat array.
+ *  Each item gets a _fbKey property so we can delete it later. */
+function firebaseToList(data) {
+  if (!data) return [];
+  if (Array.isArray(data)) {
+    return data.filter(Boolean).map((item, i) => ({...item, _fbKey: String(i)}));
   }
-}
-
-/** Returns the correct auth header depending on KEY_TYPE */
-function buildHeaders() {
-  return KEY_TYPE === 'access'
-    ? { 'X-Access-Key': API_KEY }
-    : { 'X-Master-Key': API_KEY };
-}
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-/** JSONBin can return either an array directly or { events: [] } */
-function normaliseData(data) {
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.events)) return data.events;
+  if (typeof data === 'object') {
+    return Object.entries(data).map(([key, val]) => ({...val, _fbKey: key}));
+  }
   return [];
 }
 
-function clearForm() {
-  editIndex = null;
-  ['f-title','f-date','f-location','f-description'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-type').value = 'event';
-  const now = new Date(); now.setMinutes(0,0,0);
-  document.getElementById('f-datetime').value = now.toISOString().slice(0,16);
-  selectedIcon  = ICONS[0];
-  selectedColor = COLORS[0].hex;
-  buildIconPicker();
-  buildColorPicker();
-
-  document.getElementById('form-card-title').textContent   = 'New event or session';
-  document.getElementById('form-card-subtitle').textContent = 'Saved events appear in the app within ~15 minutes.';
-  document.getElementById('save-btn-text').textContent     = 'Save event';
-  document.getElementById('edit-banner').classList.remove('visible');
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function clearEventForm() {
+  ['e-title','e-date','e-location','e-description'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('e-type').value='event';
+  const now=new Date(); now.setMinutes(0,0,0);
+  document.getElementById('e-datetime').value=now.toISOString().slice(0,16);
+  selEventIcon='🎪'; selEventColor='#1A237E';
+  buildPicker('event-icon-picker', ICONS, selEventIcon,'event-icon');
+  buildPicker('event-color-picker',COLORS,selEventColor,'event-color',true);
 }
 
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function clearTicketForm() {
+  ['t-holder','t-event','t-date'].forEach(id=>document.getElementById(id).value='');
+  generateCode();
+  document.getElementById('qr-preview-area').style.display='none';
+  lastSavedTicket=null;
 }
+
+function updateStatus() {
+  setStatus('connected',`Connected · ${allEvents.length} events · ${allTickets.length} tickets`);
+}
+
+function loading() { return '<div class="empty"><div class="empty-icon">⏳</div><p>Loading...</p></div>'; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 let toastTimer;
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className   = 'show ' + type;
+function showToast(msg,type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show '+type;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.className = '', 3400);
+  toastTimer=setTimeout(()=>t.className='',3400);
 }
 </script>
 </body>
